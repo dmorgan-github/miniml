@@ -1,0 +1,12 @@
+.DS_Store
+npm-debug.log
+docs
+.idea
+.idea/**
+*.log
+build
+publish
+.vagrant
+upload
+.sublime*
+.orig
