@@ -10,3 +10,4 @@ publish
 upload
 .sublime*
 .orig
+.pyc
