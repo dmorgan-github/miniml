@@ -3,19 +3,18 @@ define(
 		'app',
 		'angular',
 		'underscore',
-		'jquery',
-		'log'
+		'jquery'
 	],
-	function (app, angular, _, $, log) {
+	function (app, angular, _, $) {
 		'use strict';
 
 		/**
-		The service for status data
-		@class SearchSvc
+		The resource for model evaluation metrics
+		@class MetricsRsc
 		@return {Object} Returns the current instance
 		**/
 		app.miniml.factory(
-			'StatusSvc',
+			'MetricsRsc',
 			[
 				'$http',
 				function ($http) {
@@ -23,12 +22,12 @@ define(
 					var resource = {
 
 						/**
-						@method get fetches status data from endpoint
+						@method get fetches metrics from endpoint
 						@return {Object} Returns an async callback
 						**/
-						get: function (query) {
+						get: function () {
 
-							return $http.get('/api/status');
+							return $http.get('/api/ml/metrics/report');
 						}
 					};
 

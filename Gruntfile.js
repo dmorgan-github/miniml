@@ -12,14 +12,10 @@ module.exports = function (grunt) {
 		jshint: {
 
 			options: {
-	            jshintrc: '../.jshintrc'
+	            jshintrc: './.jshintrc'
 	        },
 
 			all: [
-				'./app.js',
-				'./controllers/**/*.js',
-				'./lib/**/*.js',
-				'./runtime/**/*.js',
 				'./public/js/src/**/*.js'
 			]
 		},
@@ -35,7 +31,7 @@ module.exports = function (grunt) {
 			},
 			lib: {
 				files: {
-					'js/min/require.min.js': ['js/lib/require/require.js']
+					'public/js/min/require.min.js': ['public/js/components/requirejs/require.js']
 				}
 			}
 		},
@@ -57,30 +53,6 @@ module.exports = function (grunt) {
 				}
 			}
 		},
-
-        dustjs: {
-            build: {
-                files: [
-                    {
-                        expand: true,
-                        cwd: 'tmp/',
-                        src: '**/*.dust',
-                        dest: '.build/templates',
-                        ext: '.js'
-                    }
-                ],
-                options: {
-                    fullname: function (filepath) {
-                        var path = require('path'),
-                            name = path.basename(filepath, '.dust'),
-                            parts = filepath.split(path.sep),
-                            fullname = parts.slice(3, -1).concat(name);
-
-                        return fullname.join(path.sep);
-                    }
-                }
-            }
-        },
 
         // Less task.
 		// Compiles less files into css.
@@ -104,7 +76,7 @@ module.exports = function (grunt) {
       					'./'
 				    ],
 				    exclude: 'public,config,test,views,node_modules',
-					outdir: '../docs/<%= pkg.name %>'
+					outdir: './docs/<%= pkg.name %>'
 				}
 			}
 		},
@@ -113,14 +85,6 @@ module.exports = function (grunt) {
 	      build: {
 	        cwd: '.',
 	        src: [
-	        	'app.js',
-	        	'logger.js',
-	        	'package.json',
-	        	'config/**',
-	        	'lib/**',
-	        	'runtime/**',
-	        	'node_modules/**',
-	        	'controllers/**',
 	        	'public/css/**',
 	        	'public/js/min/**',
 	        	'public/components/**',
@@ -129,7 +93,7 @@ module.exports = function (grunt) {
 	        	'public/images/**',
 	        	'views/**'
 	        ],
-	        dest: '../build/<%= pkg.name %>',
+	        dest: './build/<%= pkg.name %>',
 	        expand: true
 	      },
 	    },
@@ -140,8 +104,8 @@ module.exports = function (grunt) {
 		  		force: true
 		  	},
 		    src: [
-		    	'../build/<%= pkg.name %>',
-		    	'../publish/<%= pkg.name %>.zip'
+		    	'./build/<%= pkg.name %>',
+		    	'./publish/<%= pkg.name %>.zip'
 		    ]
 		  },
 		  package: {
@@ -149,7 +113,7 @@ module.exports = function (grunt) {
 		  		force: true
 		  	},
 		  	src: [
-		  		'../build/<%= pkg.name %>/node_modules/grunt*'
+		  		'./build/<%= pkg.name %>/node_modules/grunt*'
 		  	]
 		  }
 		},
@@ -157,22 +121,13 @@ module.exports = function (grunt) {
 		compress: {
 		  main: {
 		    options: {
-		      archive: '../publish/<%= pkg.name %>.zip'
+		      archive: './publish/<%= pkg.name %>.zip'
 		    },
 		    expand: true,
-		    cwd: '../build/<%= pkg.name %>',
+		    cwd: './build/<%= pkg.name %>',
 		    src: ['**']
 		  }
 		},
-
-		mochaTest: {
-	      test: {
-	        options: {
-	          reporter: 'spec'
-	        },
-	        src: ['test/unit/*.js']
-	      }
-	    },
 
 	    bump: {
 		  options: {
@@ -198,20 +153,18 @@ module.exports = function (grunt) {
 
 	grunt.loadNpmTasks('grunt-contrib-less');
     grunt.loadNpmTasks('grunt-contrib-requirejs');
-    grunt.loadNpmTasks('grunt-dustjs');
 	grunt.loadNpmTasks('grunt-contrib-jshint');
 	grunt.loadNpmTasks('grunt-contrib-yuidoc');
 	grunt.loadNpmTasks('grunt-contrib-copy');
 	grunt.loadNpmTasks('grunt-contrib-clean');
 	grunt.loadNpmTasks('grunt-contrib-compress');
-	grunt.loadNpmTasks('grunt-mocha-test');
 	grunt.loadNpmTasks('grunt-contrib-uglify');
 	grunt.loadNpmTasks('grunt-contrib-watch');
 	grunt.loadNpmTasks('grunt-bump');
 
 	// Default task(s).
-	grunt.registerTask('default', ['jshint', 'mochaTest']);
-	grunt.registerTask('build', ['jshint', 'mochaTest', 'clean:build', 'requirejs', 'less']);
-	grunt.registerTask('package', ['jshint', 'mochaTest', 'bump:build', 'clean:build', 'requirejs', 'less', 'copy', 'clean:package','compress']);
+	grunt.registerTask('default', ['jshint']);
+	grunt.registerTask('build', ['jshint','clean:build', 'requirejs', 'less']);
+	grunt.registerTask('package', ['jshint', 'bump:build', 'clean:build', 'requirejs', 'less', 'copy', 'clean:package','compress']);
 	//grunt.registerTask('package2', ['jshint', 'mochaTest', 'clean:build', 'requirejs', 'less', 'copy', 'clean:package','compress']);
 };

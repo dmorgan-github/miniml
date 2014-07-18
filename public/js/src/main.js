@@ -1,7 +1,6 @@
 // Require Configuration.
 requirejs.config({
 	paths: {
-		log: '../../components/log/log',
 		jquery: '../../components/jquery/dist/jquery',
 		angular: '../../components/angular/angular',
 		angularRoute: '../../components/angular-route/angular-route',
@@ -9,7 +8,8 @@ requirejs.config({
 		angularBootstrap: '../../components/angular-bootstrap/ui-bootstrap-tpls',
 		bootstrap: '../../components/bootstrap/dist/js/bootstrap',
 		underscore: '../../components/underscore/underscore',
-		moment: '../../components/momentjs/moment'
+		moment: '../../components/momentjs/moment',
+		d3: '../../components/d3/d3'
 	},
 	shim: {
 		'jquery': {
@@ -19,10 +19,6 @@ requirejs.config({
 				'use strict';
 				return this.$.noConflict();
 			}
-		},
-		'log': {
-			deps: [],
-			exports: 'log'
 		},
 		'underscore': {
 			deps: [
@@ -56,6 +52,9 @@ requirejs.config({
 		},
 		'moment': {
 			exports: 'moment'
+		},
+		'd3': {
+			exports: 'd3'
 		}
 	}
 });
@@ -65,7 +64,6 @@ requirejs.config({
 require(
 	[
 		'app',
-		'log',
 		'router'
 	],
 	function (app, log) {

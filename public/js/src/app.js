@@ -1,6 +1,5 @@
 define(
 	[
-		'log',
 		'jquery',
 		'underscore',
 		'angular',
@@ -8,7 +7,7 @@ define(
 		'angularGrid',
 		'angularBootstrap'
 	],
-	function (log, $, _, angular) {
+	function ($, _, angular) {
 		'use strict';
 
 		var app = {

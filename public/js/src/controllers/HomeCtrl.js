@@ -4,9 +4,9 @@ define(
 		'angular',
 		'underscore',
 		'jquery',
-		'log'
+		'services/EvalSvc'
 	],
-	function (app, angular, _, $, log) {
+	function (app, angular, _, $) {
 		'use strict';
 
 		/**
@@ -19,13 +19,16 @@ define(
 			[
 				'$scope',
 				'$routeParams',
-				function ($scope, $routeParams) {
+				'EvalSvc',
+				function ($scope, $routeParams, EvalSvc) {
 
 					/**
 					* Initializes the controller
 					* @method initialize
 					**/
 					function initialize() {
+
+						EvalSvc.report('#vizMetrics');
 					}
 
 					initialize();
