@@ -1,0 +1,253 @@
+<div id="container"></div>
+
+<script>
+
+function classificationSummary(data, feature, target) {
+
+	var targetVals = _(data).pluck(target);
+	var classes = _(targetVals).uniq();
+
+	function groupBy(data, keys) {
+
+		if (!_(keys).isArray()) {
+			keys = [keys];
+		}
+
+		function $groupBy (obj, values, context) {
+
+			if (!values.length) {
+				return obj;
+			}
+
+			var group = _(obj).groupBy(values[0], context);
+			var rest = values.slice(1);
+
+			var props = Object.keys(group);
+			props.forEach(function (prop) {
+
+				group[prop] = $groupBy(group[prop], rest, context);
+			});
+
+			var result = [];
+			// convert object to array
+			_(group).each(function(value, key, list) {
+
+				result.push({key: key, values: value});
+			});
+			return result;
+		}
+
+		return $groupBy(data, keys);
+	}
+
+	function summarize(groups, target, classes) {
+
+		groups.forEach(function (group) {
+
+			classes.forEach(function (c) {
+
+				var result = group.values.filter(function(d) {
+					return d[target] === c;
+				});
+				group[c] = result.length;
+			});
+		});
+	}
+
+	var result = groupBy(data, feature);
+	summarize(result, target, classes);
+	var keys = _(result).pluck('key');
+
+	return {
+		values: result,
+		classes: classes,
+		keys: keys
+	};
+}
+
+function classificationViz(data, elem) {
+
+	var values = data.values;
+	var classes = data.classes;
+	var keys = data.keys;
+
+	var result = classes.map(function(cls) {
+		return values.map(function (d) {
+			return {x: d.key, y: +d[cls]};
+		});
+	});
+
+	var stack = d3.layout.stack(),
+		layers = stack(result),
+		yGroupMax = d3.max(layers, function(layer) { return d3.max(layer, function(d) { return d.y; }); }),
+		yStackMax = d3.max(layers, function(layer) { return d3.max(layer, function(d) { return d.y0 + d.y; }); });
+
+	var legendWidth = 100;
+	var legendSquare = 10;
+	var margin = {top: 10, right: 10, bottom: 20, left: 75},
+	    width = 350 - margin.left - margin.right,
+	    height = 300 - margin.top - margin.bottom;
+
+	var x = d3.scale.ordinal()
+	    .domain(keys)
+	    .rangeRoundBands([0, width], .08);
+
+	var y = d3.scale.linear()
+	    .domain([0, yStackMax])
+	    .range([height, 0]);
+
+	var color = d3.scale.linear()
+	    .domain([0, classes.length - 1])
+	    .range(['#aad', '#556']);
+
+	var xAxis = d3.svg.axis()
+	    .scale(x)
+	    .orient('bottom');
+
+	var yAxis = d3.svg.axis()
+		.orient('left')
+		.scale(y);
+
+	var svg = d3.select(elem)
+		.append('svg')
+	    .attr('width', width + margin.left + margin.right + legendWidth)
+	    .attr('height', height + margin.top + margin.bottom)
+	  	.append('g')
+	    .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+
+	var layer = svg.selectAll('.layer')
+	    .data(layers)
+	  	.enter()
+	  	.append('g')
+	    .attr('class', 'layer')
+	    .style('fill', function(d, i) { return color(i); });
+
+	var rect = layer.selectAll('rect')
+	    .data(function(d) { return d; })
+	  	.enter()
+	  	.append('rect')
+	    .attr('x', function(d) { return x(d.x); })
+	    .attr('y', height)
+	    .attr('width', x.rangeBand())
+	    .attr('height', 0);
+
+	rect.attr('y', function(d) { return y(d.y0 + d.y); })
+		.attr('height', function(d) { return y(d.y0) - y(d.y0 + d.y); })
+		.attr('x', function(d) { return x(d.x); })
+		.attr('width', x.rangeBand());
+
+	svg.append('g')
+	    .attr('class', 'x axis')
+	    .attr('transform', 'translate(0,' + height + ')')
+	    .call(xAxis);
+
+	svg.append('g')
+	    .attr('class', 'y axis')
+	    .call(yAxis);
+
+	var legend = svg.selectAll('g.legend')
+	    .data(classes)
+	  	.enter()
+	  	.append('g')
+	  	.attr('class', 'legend')
+	  	.attr('transform', function (d, i) {
+	  		return 'translate(' + (width + 10) + ',' + (i * (legendSquare + 2)) + ')'
+	  	});
+
+	legend.append('rect')
+	    .attr('width', legendSquare)
+		.attr('height', legendSquare)
+	    .style('fill', function (d, i) { return color(i); });
+
+	legend.append('text')
+		.text(function(d) {
+			return d;
+		})
+		.attr('y', legendSquare/2)
+		.attr('dy', '.2em')
+		.attr('x', legendSquare + 2)
+		.style('font-size', '.7em');
+
+	svg.selectAll('g.axis text')
+		.style('font-size', '.7em');
+
+	svg.selectAll('.axis path')
+		.style('fill', 'none')
+		.style('stroke', '#000')
+		.style('shape-rendering', 'crispEdges');
+
+	svg.selectAll('.axis line')
+		.style('fill', 'none')
+		.style('stroke', '#000')
+		.style('shape-rendering', 'crispEdges');
+}
+
+function render(csv) {
+
+	var keys = Object.keys(csv[0]);
+	target = 'attended'
+
+	var data = classificationSummary(csv, 'prev_activity_score_pct_of_mean', target);
+	classificationViz(data, '#container');
+}
+
+function showFeatures(features) {
+
+	features.forEach(function (d) {
+		$('#features').append('<option>' + d + '</option>');
+		$('#target').append('<option>' + d + '</option>');
+	});
+
+	$('#target').val(features[features.length - 1]);
+}
+
+var csv = null;
+function fileSelected(evt) {
+
+	var files = evt.target.files;
+
+	Papa.parse(files[0], {
+		header: true,
+		complete: function(results) {
+			csv = results.data;
+			var features = Object.keys(csv[0]);
+			showFeatures(features);
+		}
+	});
+}
+
+function visualize() {
+
+	var feature = $('#features').val();
+	var target = $('#target').val();
+
+	$('#viz').empty();
+	var data = classificationSummary(csv, feature, target);
+	classificationViz(data, '#viz');
+}
+
+$(document).ready(function(){
+
+	$('#file').on('change', fileSelected);
+	$('#btnVisualize').on('click', visualize);
+});
+
+</script>
+
+
+<div class="row">
+	<div class="col-md-2">
+		<input type="file" id="file" name="file"/>
+		<br/>
+		<select id="features"></select>
+		<br/>
+		<select id="target"></select>
+		<br />
+		<button id="btnVisualize">visualize</button>
+	</div>
+	<div class="col-md-10">
+		<div id="viz"></div>
+	</div>
+</div>
+
+

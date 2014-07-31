@@ -2,7 +2,8 @@ define(
 	[
 		'app',
 		'angular',
-		'controllers/HomeCtrl'
+		'controllers/HomeCtrl',
+		'controllers/StatsCtrl'
 	],
 	function (app) {
 		'use strict';
@@ -21,6 +22,10 @@ define(
 						.when('/home', {
 							templateUrl: 'templates/home.html',
 							controller: 'HomeCtrl'
+						})
+						.when('/stats', {
+							templateUrl: 'templates/stats.html',
+							controller: 'StatsCtrl'
 						})
 						.otherwise({
 							redirectTo: '/home'
